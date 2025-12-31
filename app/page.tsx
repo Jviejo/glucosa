@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import ReactMarkdown from "react-markdown";
 
 export default function Home() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -11,6 +12,12 @@ export default function Home() {
   const [error, setError] = useState<string>("");
   const [analysisTime, setAnalysisTime] = useState<number | null>(null);
 
+  const exampleImages = [
+    "/IMG_62A9959E68C1-1.jpeg",
+    "/IMG_AA2C3E7D3F44-1.jpeg",
+    "/IMG_BCE5DCD75685-1.jpeg",
+  ];
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -19,6 +26,23 @@ export default function Home() {
       setAnalysis("");
       setError("");
       setAnalysisTime(null);
+    }
+  };
+
+  const handleExampleClick = async (imageUrl: string) => {
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const file = new File([blob], imageUrl.split("/").pop() || "example.jpeg", {
+        type: blob.type,
+      });
+      setSelectedImage(file);
+      setPreviewUrl(imageUrl);
+      setAnalysis("");
+      setError("");
+      setAnalysisTime(null);
+    } catch (err) {
+      setError("Error al cargar la imagen de ejemplo");
     }
   };
 
@@ -170,6 +194,27 @@ export default function Home() {
               <p>{error}</p>
             </div>
           )}
+
+          <div className="mt-8 border-t border-gray-200 dark:border-gray-700 pt-6">
+            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
+              O prueba con un ejemplo:
+            </h3>
+            <div className="grid grid-cols-3 gap-3">
+              {exampleImages.map((imageUrl, index) => (
+                <div
+                  key={index}
+                  onClick={() => handleExampleClick(imageUrl)}
+                  className="cursor-pointer border-2 border-gray-300 dark:border-gray-600 hover:border-indigo-500 rounded-lg p-2 bg-white dark:bg-gray-800 transition-all hover:shadow-lg"
+                >
+                  <img
+                    src={imageUrl}
+                    alt={`Ejemplo ${index + 1}`}
+                    className="w-full h-auto rounded"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         {analysis && (
@@ -197,10 +242,8 @@ export default function Home() {
                 </div>
               )}
             </div>
-            <div className="prose dark:prose-invert max-w-none">
-              <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300">
-                {analysis}
-              </div>
+            <div className="prose dark:prose-invert max-w-none prose-headings:text-gray-900 dark:prose-headings:text-white prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-strong:text-gray-900 dark:prose-strong:text-white prose-ul:text-gray-700 dark:prose-ul:text-gray-300 prose-li:text-gray-700 dark:prose-li:text-gray-300">
+              <ReactMarkdown>{analysis}</ReactMarkdown>
             </div>
             <div className="mt-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg">
               <p className="text-sm text-yellow-800 dark:text-yellow-200">
